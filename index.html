@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Kursus - Lesson 1-3</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            background: #f0f4f8;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .sidebar {
+            flex: 1;
+            min-width: 180px;
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            height: fit-content;
+        }
+        .sidebar h3 {
+            margin-bottom: 15px;
+            color: #1e3a5f;
+        }
+        .lesson-btn {
+            display: block;
+            width: 100%;
+            background: #f1f5f9;
+            border: none;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-align: left;
+        }
+        .lesson-btn:hover {
+            background: #e2e8f0;
+        }
+        .lesson-btn.active {
+            background: #3b82f6;
+            color: white;
+        }
+        .content {
+            flex: 3;
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+        }
+        .audio-box {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        audio {
+            width: 100%;
+        }
+        iframe {
+            width: 100%;
+            border: none;
+            border-radius: 12px;
+        }
+        .info {
+            text-align: center;
+            padding: 50px;
+            color: #94a3b8;
+        }
+        .error {
+            background: #fee2e2;
+            padding: 20px;
+            border-radius: 12px;
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="sidebar">
+        <h3>📚 Pilih Lesson</h3>
+        <button class="lesson-btn" onclick="loadLesson(1)">Lesson 1</button>
+        <button class="lesson-btn" onclick="loadLesson(2)">Lesson 2</button>
+        <button class="lesson-btn" onclick="loadLesson(3)">Lesson 3</button>
+    </div>
+    <div class="content" id="content">
+        <div class="info">🎧 Klik lesson di samping untuk mulai</div>
+    </div>
+</div>
+
+<script>
+    function loadLesson(num) {
+        const numPad = num.toString().padStart(2, '0');
+        const materiUrl = `materi/${numPad}.html`;
+        const audioUrl = `audio/${numPad}.mp3`;
+
+        const content = document.getElementById('content');
+        
+        content.innerHTML = `
+            <div class="audio-box">
+                <strong>🎧 Audio Lesson ${num}</strong>
+                <audio controls src="${audioUrl}"></audio>
+            </div>
+            <div id="materiBox">
+                <div class="info">📄 Memuat materi lesson ${num}...</div>
+            </div>
+        `;
+
+        fetch(materiUrl)
+            .then(res => {
+                if (res.ok) {
+                    document.getElementById('materiBox').innerHTML = `
+                        <iframe id="materiFrame" src="${materiUrl}" style="height:600px;"></iframe>
+                    `;
+                    // Sesuaikan tinggi iframe dengan isi
+                    setTimeout(() => {
+                        const iframe = document.getElementById('materiFrame');
+                        if (iframe) {
+                            try {
+                                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                                const height = iframeDoc.body.scrollHeight;
+                                iframe.style.height = Math.max(height + 50, 500) + 'px';
+                            } catch(e) {}
+                        }
+                    }, 500);
+                } else {
+                    document.getElementById('materiBox').innerHTML = `
+                        <div class="error">
+                            ❌ File ${numPad}.html tidak ditemukan di folder materi/<br><br>
+                            <strong>Cara memperbaiki:</strong><br>
+                            1. Buka file lesson${num}_rev.doc di Word<br>
+                            2. File → Save As → Web Page (.html)<br>
+                            3. Simpan sebagai <strong>${numPad}.html</strong><br>
+                            4. Pindahkan file ${numPad}.html dan folder ${numPad}_files/<br>
+                            5. Letakkan di folder <strong>materi/</strong>
+                        </div>
+                    `;
+                }
+            })
+            .catch(() => {
+                document.getElementById('materiBox').innerHTML = `<div class="error">❌ Gagal memuat materi</div>`;
+            });
+
+        // Highlight tombol
+        document.querySelectorAll('.lesson-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+    }
+</script>
+</body>
+</html>
